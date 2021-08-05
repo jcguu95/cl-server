@@ -2,8 +2,8 @@
 
 ## Goal
 
-Aim to become what `emacsclient --eval` is for elisp and what
-`babashka` is for clojure for common lisp.
+Elisp has `emacsclient --eval`, clojure has `babashka`, and 
+common lisp will have `cl-server`.
 
 ``` shell
 # cl-server ::
@@ -20,5 +20,7 @@ bb took 4ms.
 
 ## Reference
 
++ [A related
+  discussion](https://www.reddit.com/r/Common_Lisp/comments/owgrie/ways_to_talk_to_a_lisp_repl_a_brief_survey/)
 + [Babashka](https://github.com/babashka/babashka)
 + [Emacsclient](https://www.emacswiki.org/emacs/EmacsClient)
