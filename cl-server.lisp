@@ -6,6 +6,7 @@
 ;; README
 ;;
 ;; Use the shell script client `cls` to send message to LISP.
+;;
 ;; TODO Need to define a protocol, write a message checker, and
 ;; interpretor. Moreover, need to take care of the output back to
 ;; the client too (harder).
