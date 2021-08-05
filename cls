@@ -2,6 +2,10 @@
 #
 # Client for Common Lisp Server (CLS)
 
+# TODO To support options "--help", "--script", "--verbose",
+# "--version". Support quick launching core image if server
+# happens to be down.
+
 escape () {
     echo "$@" | sed 's/\\/\\\\\\\\/g' | sed 's/\"/\\\"/g'
 }
@@ -30,8 +34,6 @@ echo -e "   '.   APPLY.' "
 echo -e "     *.____.*   "
 echo -e ""
 echo -e "$MESSAGE" # FIXME - It should be printed readably.
-
-
 
 SOCKET="/home/jin/socket"
 echo "$MESSAGE" | socat - UNIX-CONNECT:$SOCKET
