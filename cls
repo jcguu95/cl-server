@@ -14,7 +14,7 @@ UNIX_TIME=$(date +%s)
 STDIN=$(escape "$(cat -)") # FIXME - If no input, it hangs and waits.
 ARGS=$(escape "$@")
 
-generate_message () {
+generate_parcel () {
     echo -e "("
     echo -e " :UNIX-TIME\n\n \"$UNIX_TIME\"\n"
     echo -e " :STDIN\n\n \"$STDIN\"\n"
@@ -22,21 +22,26 @@ generate_message () {
     echo -e ")"
     echo -e ""
 }
-MESSAGE=$(generate_message)
+PARCEL=$(generate_parcel)
 
 # Verbose
-echo -e ""
-echo -e "     .-****-.   "
-echo -e "    *       _*  "
-echo -e "   * EVAL .'  * "
-echo -e "   *.___.'    * "
-echo -e "   '.   APPLY.' "
-echo -e "     *.____.*   "
-echo -e ""
-echo -e "$MESSAGE" # FIXME - It should be printed readably.
+echo -e "                " 1>&2
+echo -e "     .-****-.   " 1>&2
+echo -e "    *       _*  " 1>&2
+echo -e "   * EVAL .'  * " 1>&2
+echo -e "   *.___.'    * " 1>&2
+echo -e "   '.   APPLY.' " 1>&2
+echo -e "     *.____.*   " 1>&2
+echo -e "                " 1>&2
+echo -e "$PARCEL"          1>&2 # FIXME - It should be printed readably.
 
-SOCKET="/home/jin/socket"
-echo "$MESSAGE" | socat - UNIX-CONNECT:$SOCKET
+SOCKETS_DIR="/home/jin/.cl-server/sockets"
+SOCKET=$(ls "$SOCKETS_DIR" | sort -r | head -n 1)
+echo "$PARCEL" | socat - UNIX-CONNECT:"$SOCKETS_DIR/$SOCKET"
+
+### TODO To receive message, look into
+### socat - UNIX-SENDTO:/home/jin/test
+### socat - UNIX-RECVFROM:/home/jin/test
 
 exit
 
