@@ -6,16 +6,24 @@ Elisp has `emacsclient --eval`, clojure has `babashka`, and
 common lisp will have `cl-server`.
 
 ``` shell
+# MERELY GOALS - NOT READY TO USE YET.
+
 # cl-server ::
-$ echo "0 1 2 3 4" | cls "(nth 2 (magic-transform *input*))" 
+$ echo "0 1 2 3 4" | cls '(nth 2 *input*)' 
 2
-$ ls | cls "(filter #'directory? *input*)"
+$ ls | cls '(take 2 *input*)'
+("CHANGES.md" "Dockerfile")
+$ ls | cls '(filter #\'directory? *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 
 # Babashka ::
 $ ls | bb -i '(filter #(-> % io/file .isDirectory) *input*)'
 ("doc" "resources" "sci" "script" "src" "target" "test")
 bb took 4ms.
+$ ls | bb -i '(take 2 *input*)'
+("CHANGES.md" "Dockerfile")
+$ bb '(vec (dedupe *input*))' <<< '[1 1 1 1 2]'
+[1 2]
 ```
 
 ## Reference

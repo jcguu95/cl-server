@@ -7,6 +7,6 @@
   :version "0.0"
   :properties ((#:author-email . "jcguu95@gmail.com"))
   #+asdf-unicode :encoding #+asdf-unicode :utf-8
-  :depends-on (:unix-sockets :babel :bordeaux-threads)
+  :depends-on (:unix-sockets :babel :bordeaux-threads :local-time)
   :components ((:file "package")
                (:file "cl-server")))
