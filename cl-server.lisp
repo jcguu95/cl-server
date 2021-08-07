@@ -44,8 +44,17 @@
                                    (message (unpack parcel)))
                               (push parcel *parcels*)
                               (when (messagep message)
-                                ;; TODO Handle errors more cleverly.
-                                (ignore-errors (eval-message message))))))))
+                                (bt:make-thread
+                                 ;; TODO Handle errors more
+                                 ;; cleverly. Otherwise the shell
+                                 ;; side does not know if it
+                                 ;; should keep waiting. TODO
+                                 ;; Should separate eval-message
+                                 ;; and return message, and tell
+                                 ;; the shell side if error
+                                 ;; happens.
+                                 (lambda () (ignore-errors (eval-message message)))
+                                 :name "please gimme a subname TODO")))))))
           (delete-file file)))
       :name (format nil "cl-server:~a" now))
      *servers*)))
@@ -59,12 +68,12 @@
                     collect (cons i server)))))
 
 (defun unpack (parcel)
-  ;; TODO Should be a generic function.
+  ;; TODO make a generic function.
   "Expect PARCEL to be a string that satisfies the
   following: (read-from-string PARCEL) must return NIL or a plist
   with values being strings. In this case, we say that PARCEL
   unpacks to a MESSAGE."
-  (read-from-string parcel))
+  (read-from-string parcel nil))
 
 (defun messagep (message)
   "A message is a plist with values being strings."
@@ -76,17 +85,12 @@
                         t))))
     (values (plist-strings? message) message)))
 
-(defun eval-message (message &key
-                               stdin-transformer
-                               (args-transformer #'read-from-string))
-  ;; TODO this should be a generic function.
-  ;;
-  ;; ;; Example: The following sets *X* to "Hello!"
-  ;;
-  ;;    (eval-message (list :unix-time "1"
-  ;;                        :stdin "Hello!"
-  ;;                        :args "(setf *x* (read-line))"))
-  "Evaluate the message."
+(defun eval-message (message
+                     &key
+                       stdin-transformer
+                       (args-transformer (lambda (x) (read-from-string x nil))))
+  ;; TODO make a generic function.
+  "Evaluate the MESSAGE if it is a message."
   (assert (messagep message))
   (let ((stdin (getf message :STDIN))
         (args (getf message :ARGS))
@@ -98,12 +102,15 @@
     (when args-transformer
       (setf args (funcall args-transformer args)))
     (let ((output (with-input-from-string (in stdin)
-                    (let ((*standard-input* in)) (eval args)))))
-      (with-input-from-string (in-stream (format nil "~a~&" output))
-        (uiop:run-program
-         (format nil "socat - UNIX-CONNECT:/tmp/~a" id)
-         :input in-stream
-         :output *standard-output*))
+                    (let ((*standard-input* in))
+                      (eval args)))))
+
+       (with-input-from-string
+           (in-stream (format nil "~a~&" output))
+         (uiop:run-program
+          (format nil "socat - UNIX-CONNECT:/tmp/~a" id)
+          :input in-stream
+          :output *standard-output*))
       ;; ;; unix-sockets only supports sending bytes currently. I
       ;; ;; do no know how to let the bytes arrive in the correct
       ;; ;; order.
@@ -115,3 +122,4 @@
       ;;              ;; this does not guarantee sending in correct order
       ;;              (write-byte byte stream))))
       )))
+

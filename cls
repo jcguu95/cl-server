@@ -6,11 +6,14 @@
 # "--version". Support quick launching core image if server
 # happens to be down.
 
+# TODO Rewrite this in C.. shell is stil TOO slow. Compare with the tests in
+# https://www.reddit.com/r/Common_Lisp/comments/owgrie/ways_to_talk_to_a_lisp_repl_a_brief_survey/
+
 escape () {
     echo "$@" | sed 's/\\/\\\\\\\\/g' | sed 's/\"/\\\"/g'
 }
 
-STDIN=$(escape "$(cat -)") # FIXME - If no input, it hangs and waits.
+STDIN=$([ ! -t 0 ] && cat -)
 ARGS=$(escape "$@")
 UNIX_TIME=$(date +%s)
 ID=$RANDOM$RANDOM$RANDOM
@@ -27,7 +30,7 @@ generate_parcel () {
     echo -e ""
 }
 PARCEL=$(generate_parcel)
-# # Verbose
+# Verbose
 # echo -e "                " 1>&2
 # echo -e "     .-****-.   " 1>&2
 # echo -e "    *       _*  " 1>&2
@@ -36,13 +39,14 @@ PARCEL=$(generate_parcel)
 # echo -e "   '.   APPLY.' " 1>&2
 # echo -e "     *.____.*   " 1>&2
 # echo -e "                " 1>&2
-# echo -e "$PARCEL"          1>&2 # FIXME - It should be printed readably.
+# echo -e "$PARCEL"          1>&2
 
 SOCKETS_DIR="/home/jin/.cl-server/sockets"
 SOCKET=$(ls "$SOCKETS_DIR" | sort -r | head -n 1)
 echo "$PARCEL" | socat - UNIX-CONNECT:"$SOCKETS_DIR/$SOCKET"
 
-#socat UNIX-LISTEN:$LISTEN_ON,fork - #&&# rm $LISTEN_ON
-socat UNIX-LISTEN:$LISTEN_ON - #&& rm $LISTEN_ON
+# echo speeds up socat's ending decision when stdin is empty.
+# FIXME - The result should be printed readably by lisp?
+echo | socat UNIX-LISTEN:$LISTEN_ON -
 
 exit
