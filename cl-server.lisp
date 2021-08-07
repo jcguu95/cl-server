@@ -8,6 +8,21 @@
 ;; FIXME What if the thread takes a long task? Some other thread
 ;; should be created, at least to inform the user.
 
+;; TODO Developmental note
+;;
+;; 1. receive
+;;
+;; 2. unpack
+;;
+;; 3. save-eval-smart-return (any message should go to stdout of
+;; shell, but should also be logged in the memory of the
+;; server.;;; obj, multi val, error message?)
+;;
+;; 4. pack (Add options for transformers. The output should
+;; depend on where to pipe.)
+;;
+;; 5. send
+
 (defun now-ts ()
   "Generate the current timestring."
   (local-time:format-timestring
