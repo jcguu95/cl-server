@@ -1,13 +1,17 @@
 #!/bin/sh
 #
-# Client for Common Lisp Server (CLS)
+# Client for Common Lisp Server
 
 # TODO To support options "--help", "--script", "--verbose",
 # "--version". Support quick launching core image if server
 # happens to be down.
 
-# TODO Rewrite this in C.. shell is stil TOO slow. Compare with the tests in
+# TODO Rewrite this client in C.. shell is stil TOO slow. Need to
+# hack cl-unix-sockets. Compare with the tests in
 # https://www.reddit.com/r/Common_Lisp/comments/owgrie/ways_to_talk_to_a_lisp_repl_a_brief_survey/
+#
+# TODO Add an option "--script" that takes a file and treats its
+# content as ARGV.
 
 escape () {
     echo "$@" | sed 's/\\/\\\\\\\\/g' | sed 's/\"/\\\"/g'
@@ -31,6 +35,7 @@ generate_parcel () {
 }
 PARCEL=$(generate_parcel)
 # Verbose
+# # TODO Add an option "--verbose"
 # echo -e "                " 1>&2
 # echo -e "     .-****-.   " 1>&2
 # echo -e "    *       _*  " 1>&2
@@ -44,6 +49,7 @@ PARCEL=$(generate_parcel)
 SOCKETS_DIR="/home/jin/.cl-server/sockets"
 SOCKET=$(ls "$SOCKETS_DIR" | sort -r | head -n 1)
 echo "$PARCEL" | socat - UNIX-CONNECT:"$SOCKETS_DIR/$SOCKET"
+# TODO If the server is not on, say something and skip the next step.
 
 # echo speeds up socat's ending decision when stdin is empty.
 # FIXME - The result should be printed readably by lisp?

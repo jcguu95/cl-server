@@ -1,9 +1,14 @@
 prefix=${HOME}/.local/bin
+target=${prefix}/lisp
 
 all:
 
 install_client:
-	cp cls ${prefix}/cls
+	cp ./lisp ${target}
+
+uninstall_client:
+	rm ${target}
 
 install: install_client
 
+uninstall: uninstall_client
