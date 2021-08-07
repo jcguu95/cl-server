@@ -5,12 +5,8 @@
 (defparameter *sockets-dir* "/home/jin/.cl-server/sockets/")
 (ensure-directories-exist *sockets-dir*)
 
-;; README
-;;
-;; Use the shell script client `cls` to send parcels to LISP.
-;;
-;; TODO still need to take care of the output back to the client
-;; too (harder).
+;; FIXME What if the thread takes a long task? Some other thread
+;; should be created, at least to inform the user.
 
 (defun now-ts ()
   "Generate the current timestring."
@@ -37,17 +33,19 @@
                      do (unix-sockets:with-unix-socket
                             (client (unix-sockets:accept-unix-socket server-sock))
                           (let ((read-value nil)
-                                (result (list 0)) ; adhoc fix for push later ; FIXME is it necessary?
+                                (result (list 0)) ; adhoc fix for push later
                                 (stream (unix-sockets:unix-socket-stream client)))
                             (loop while (setf read-value (read-byte stream nil))
                                   do (push read-value (cdr (last result))))
                             (let* ((parcel (string-trim
-                                            '(#\Soh)
+                                            '(#\Soh #\Nul)
                                             (babel:octets-to-string
                                              (coerce result '(vector (unsigned-byte 8))))))
                                    (message (unpack parcel)))
                               (push parcel *parcels*)
-                              (when (messagep message) (eval-message message)))))))
+                              (when (messagep message)
+                                ;; TODO Handle errors more cleverly.
+                                (ignore-errors (eval-message message))))))))
           (delete-file file)))
       :name (format nil "cl-server:~a" now))
      *servers*)))
@@ -88,16 +86,32 @@
   ;;    (eval-message (list :unix-time "1"
   ;;                        :stdin "Hello!"
   ;;                        :args "(setf *x* (read-line))"))
-  ;;
   "Evaluate the message."
   (assert (messagep message))
-  (let ((unix-time (getf message :UNIX-TIME))
-        (stdin (getf message :STDIN))
-        (args (getf message :ARGS)))
+  (let ((stdin (getf message :STDIN))
+        (args (getf message :ARGS))
+        (unix-time (getf message :UNIX-TIME))
+        (id (getf message :ID)))
     (declare (ignore unix-time))
     (when stdin-transformer
       (setf stdin (funcall stdin-transformer stdin)))
     (when args-transformer
       (setf args (funcall args-transformer args)))
-    (with-input-from-string (in stdin)
-      (let ((*standard-input* in)) (eval args)))))
+    (let ((output (with-input-from-string (in stdin)
+                    (let ((*standard-input* in)) (eval args)))))
+      (with-input-from-string (in-stream (format nil "~a~&" output))
+        (uiop:run-program
+         (format nil "socat - UNIX-CONNECT:/tmp/~a" id)
+         :input in-stream
+         :output *standard-output*))
+      ;; ;; unix-sockets only supports sending bytes currently. I
+      ;; ;; do no know how to let the bytes arrive in the correct
+      ;; ;; order.
+      ;;
+      ;; (loop for byte across (babel:string-to-octets (format nil "~a" output))
+      ;;       do (unix-sockets:with-unix-socket
+      ;;              (client (unix-sockets:connect-unix-socket (format nil "/tmp/~a" id)))
+      ;;            (let* ((stream (unix-sockets:unix-socket-stream client)))
+      ;;              ;; this does not guarantee sending in correct order
+      ;;              (write-byte byte stream))))
+      )))
