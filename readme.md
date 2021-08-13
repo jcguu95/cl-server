@@ -1,13 +1,15 @@
 # cl-server
 
+Under construction..
+
 ## Goal
 
-Elisp has `emacsclient --eval`, clojure has `babashka`, and 
+Elisp has `emacsclient --eval`, clojure has `babashka`, and
 common lisp will have `cl-server`.
 
 ``` shell
 # The following are not implemented and designed yet. Just some thought.
-$ echo "0 1 2 3 4" | lisp '(nth 2 *input*)' 
+$ echo "0 1 2 3 4" | lisp '(nth 2 *input*)'
 2
 $ ls | lisp '(take 2 *input*)'
 ("CHANGES.md" "Dockerfile")
@@ -16,14 +18,14 @@ $ ls | lisp '(filter #\'directory? *input*)'
 ```
 
 ``` lisp
-; Need a DSL to quickly transform *input*. 
+; Need a DSL to quickly transform *input*.
 ; For example, #il could mean (listify *input*).
 
-listify: 
+listify:
     "1 2"  -> ("1" "2")
-listify: 
+listify:
     "1\n2" -> (("1") ("2"))
-(listify ","): 
+(listify ","):
     "1,2"  -> ("1" "2")
 str-num:
     ("1" "2") -> (1 2)
