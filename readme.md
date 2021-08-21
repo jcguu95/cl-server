@@ -18,3 +18,8 @@ not work out.
    ```
    $ ls -al | lisp-server "(magic-transformer *input*)" | ..
    ```
+
+## IDEAS
+
+1. Look at how [`daveray/clawk`](https://github.com/daveray/clawk) deals with
+   outputs.
