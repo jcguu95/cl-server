@@ -22,7 +22,7 @@ not work out.
 ## IDEAS
 
 1. Look at how [`daveray/clawk`](https://github.com/daveray/clawk) deals with
-   outputs.
+   outputs. Also see alecthomas/pawk.
 
 2. Look at the advantage of
    [nushell](https://gitlab.com/ambrevar/ambrevar.gitlab.io/-/issues/22).
